@@ -23,7 +23,6 @@ impl Server {
                     let mut buffer = [0; 1024];
                     match stream.read(&mut buffer) {
                         Ok(_) => {
-                            println!("{}", String::from_utf8_lossy(&buffer));
                             match Request::try_from(&buffer[..] ) {
                                 Ok(request) => {},
                                 Err(e) =>{}
