@@ -6,24 +6,20 @@ use std::str::{Utf8Error};
 use std::option::Option;
 use crate::http::method::MethodError;
 
-pub struct Request {
-    path: String,
-    query_string: Option<String>,
+pub struct Request<'buffer> {
+    path: &'buffer str,
+    query_string: Option<&'buffer str>,
     method: Method
 }
 
-impl Request {
-
-}
-
-impl TryFrom<&[u8]> for Request {
+impl<'buffer> TryFrom<&'buffer[u8]> for Request<'buffer> {
     type Error = ParseError;
 
-    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+    fn try_from(value: &'buffer[u8]) -> Result<Self, Self::Error> {
         let request = str::from_utf8(&value)?;
 
         let (method,request) = get_next_word(&request).ok_or(ParseError::InvalidRequest)?;
-        let (path,request) = get_next_word(&request).ok_or(ParseError::InvalidRequest)?;
+        let (mut path,request) = get_next_word(&request).ok_or(ParseError::InvalidRequest)?;
         let (protocol,_) = get_next_word(&request).ok_or(ParseError::InvalidRequest)?;
 
         println!("{} {} {}", &method,&path,&protocol);
@@ -33,9 +29,18 @@ impl TryFrom<&[u8]> for Request {
         }
 
         let method: Method = method.parse()?;
-        println!("{} is the value of our METHOD", method);
 
-        unimplemented!();
+        let mut query_string = None;
+        if let Some(index) = path.find('?') {
+            query_string = Some(&path[index + 1..]);
+            path = &path[..index];
+        }
+
+        Ok(Self {
+            path,
+            query_string,
+            method
+        })
     }
 }
 
