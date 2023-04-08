@@ -24,7 +24,7 @@ impl Server {
                     match stream.read(&mut buffer) {
                         Ok(_) => {
                             match Request::try_from(&buffer[..] ) {
-                                Ok(request) => {},
+                                Ok(request) => {dbg!(request);},
                                 Err(e) =>{}
                             }
                         },
