@@ -1,5 +1,8 @@
 use std::fmt::{Display, Formatter};
+use std::net::TcpStream;
 use std::str::from_utf8;
+use std::io::Write;
+use crate::http::status_code;
 use super::status_code::StatusCode;
 
 #[derive(Debug)]
@@ -18,13 +21,20 @@ impl<'response_buffer> Response<'response_buffer> {
                     body = Some(computed_body);
                 }
             }
-            _ => {}
+            _ => {let status_code = StatusCode::ServerError;}
         }
 
         Response{
             status_code,
             body
         }
+    }
+
+    /**
+    * Reply to TCP stream with built socket
+    **/
+    pub fn reply(&self, stream: TcpStream) -> std::io::Result<()> {
+        write!(&stream, "{}", self)
     }
 }
 

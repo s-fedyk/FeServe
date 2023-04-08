@@ -45,9 +45,8 @@ impl<'buffer> TryFrom<&'buffer[u8]> for Request<'buffer> {
             path = &path[..index];
         }
 
-
         Ok(Self {
-            path: "index.html",
+            path,
             query_string,
             method
         })
