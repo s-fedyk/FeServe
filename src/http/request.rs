@@ -14,6 +14,13 @@ pub struct Request<'buffer> {
     method: Method
 }
 
+impl<'buffer> Request<'buffer>{
+
+    pub fn getPath(&self) -> &str {
+        self.path
+    }
+}
+
 impl<'buffer> TryFrom<&'buffer[u8]> for Request<'buffer> {
     type Error = ParseError;
 
@@ -40,7 +47,7 @@ impl<'buffer> TryFrom<&'buffer[u8]> for Request<'buffer> {
 
 
         Ok(Self {
-            path,
+            path: "index.html",
             query_string,
             method
         })

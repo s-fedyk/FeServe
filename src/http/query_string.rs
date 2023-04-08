@@ -1,4 +1,4 @@
-use std::collections::{hash_map, HashMap};
+use std::collections::{HashMap};
 use crate::http::query_string::Value::{Multiple, Single};
 
 #[derive(Debug)]
