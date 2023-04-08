@@ -46,7 +46,7 @@ impl<'buffer> TryFrom<&'buffer[u8]> for Request<'buffer> {
         }
 
         Ok(Self {
-            path,
+            path: &path[1..], // cropping out the "/"
             query_string,
             method
         })

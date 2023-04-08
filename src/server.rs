@@ -1,6 +1,6 @@
 use std::{env, str};
 use std::env::current_dir;
-use std::net::TcpListener;
+use std::net::{TcpListener, TcpStream};
 use std::io::{Read};
 use std::fs::File;
 use crate::http::{Request, Response, StatusCode};
@@ -15,7 +15,10 @@ impl Server {
             address
         }
     }
-    // note, dont take ownership of the struct, so we dont kill our server
+
+    /**
+    Main server loop, accepts and replies to connections
+    **/
     pub fn run(&self) {
         let listener = TcpListener::bind(&self.address).unwrap();
 
@@ -27,9 +30,7 @@ impl Server {
                         Ok(_) => {
                             match Request::try_from(&buffer[..] ) {
                                 Ok(request) => {
-                                    let mut response_body = [0; 1024];
-                                    let result = Server::fetch(&request, &mut response_body);
-                                    result.reply(stream);
+                                    Server::fetch(request,stream);
                                 },
                                 Err(e) =>{}
                             }
@@ -48,18 +49,24 @@ impl Server {
         }
     }
 
-    fn fetch<'buffer>(request: &Request, response_body: &'buffer mut [u8]) -> Response<'buffer> {
-        return match File::open(request.getPath()) {
+    /**
+    Fill a response buffer with a file, and then reply to the tcp stream
+    **/
+    fn fetch(request: Request,stream: TcpStream) -> std::io::Result<()>{
+        let mut response_body = [0; 1024];
+        let response = match File::open(request.getPath()) {
             Ok(mut file) => {
-                match file.read(response_body) {
-                    Ok(_) => { Response::new(StatusCode::Ok, Some(response_body)) },
-                    Err(_) => { Response::new(StatusCode::BadRequest, None) }
+                match file.read(&mut response_body) {
+                    Ok(_) =>  Response::new(StatusCode::Ok, Some(&response_body)),
+                    Err(_) => Response::new(StatusCode::BadRequest, None)
                 }
             },
             Err(_) => {
-                { Response::new(StatusCode::NotFound, None) }
+                Response::new(StatusCode::NotFound, None)
             }
-        }
+        };
+
+        response.reply(stream)
     }
 
 }

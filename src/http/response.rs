@@ -31,7 +31,7 @@ impl<'response_buffer> Response<'response_buffer> {
     }
 
     /**
-    * Reply to TCP stream with built socket
+    * Reply to TCP stream with assembled response
     **/
     pub fn reply(&self, stream: TcpStream) -> std::io::Result<()> {
         write!(&stream, "{}", self)
